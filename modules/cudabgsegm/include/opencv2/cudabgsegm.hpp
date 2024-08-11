@@ -155,6 +155,23 @@ CV_EXPORTS_W Ptr<cuda::BackgroundSubtractorMOG2>
     createBackgroundSubtractorMOG2(int history = 500, double varThreshold = 16,
                                    bool detectShadows = true);
 
+class CV_EXPORTS_W MedianFilter
+{
+public:
+    virtual void apply(InputArray image) = 0;
+	virtual void apply(InputArray image, Stream& stream) = 0;
+
+	virtual void getMedianImage(OutputArray medianImage) const = 0;
+    virtual void getMedianImage(OutputArray medianImage, Stream& stream) const = 0;
+    inline void getMedianImage(CV_OUT GpuMat &medianImage, Stream& stream) {
+        getMedianImage(OutputArray(medianImage), stream);
+    }
+
+	virtual void clear() = 0;
+};
+
+CV_EXPORTS_W Ptr<cuda::MedianFilter> createMedianFilter();
+		
 //! @}
 
 }} // namespace cv { namespace cuda {
