@@ -59,8 +59,8 @@ namespace cv { namespace cuda { namespace device
 {
     namespace median_filter
     {
-        void median_filter_gpu(PtrStepSzus frame, PtrStepSzus history, int nFrame, cudaStream_t stream);
-        void getMedianImage_gpu(PtrStepSzus history, PtrStepSzus dst, int nFrame, cudaStream_t stream);
+        void median_filter_gpu(PtrStepSzf frame, PtrStepSzf history, int nFrame, cudaStream_t stream);
+        void getMedianImage_gpu(PtrStepSzf history, PtrStepSzf dst, int nFrame, cudaStream_t stream);
     }
 }}}
 
@@ -144,13 +144,13 @@ void MedianFilterImpl::initialize(cv::Size frameSize, int frameType,
                                   Stream &stream) {
   using namespace cv::cuda::device::median_filter;
 
-  CV_Assert(frameType == CV_16UC1);
+  CV_Assert(frameType == CV_32FC1);
 
   frameSize_ = frameSize;
   frameType_ = frameType;
   nframes_ = 0;
 
-  history_.create(frameSize.height * historyLength, frameSize_.width, CV_16UC1);
+  history_.create(frameSize.height * historyLength, frameSize_.width, CV_32FC1);
 }
 } // namespace 
 

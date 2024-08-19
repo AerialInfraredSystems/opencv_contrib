@@ -67,7 +67,7 @@ __device__ __forceinline__ void swap(Ptr2D &ptr, int x, int y, int a, int b, int
 ///////////////////////////////////////////////////////////////
 // MOG2
 
-__global__ void medianFilter(const PtrStepSzus frame, PtrStepSzus history, int nFrame)
+__global__ void medianFilter(const PtrStepSzf frame, PtrStepSzf history, int nFrame)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -75,7 +75,7 @@ __global__ void medianFilter(const PtrStepSzus frame, PtrStepSzus history, int n
 	history(nFrame * frame.rows + y, x) = frame(y, x);
 }
 
-void median_filter_gpu(PtrStepSzus frame, PtrStepSzus history, int nFrame, cudaStream_t stream)
+void median_filter_gpu(PtrStepSzf frame, PtrStepSzf history, int nFrame, cudaStream_t stream)
 {
     dim3 block(32, 8);
     dim3 grid(divUp(frame.cols, block.x), divUp(frame.rows, block.y));
@@ -89,7 +89,7 @@ void median_filter_gpu(PtrStepSzus frame, PtrStepSzus history, int nFrame, cudaS
         cudaSafeCall(cudaDeviceSynchronize());
 }
 
-__global__ void getMedianImage(PtrStepSzus history, PtrStepSzus dst, int nFrame)
+__global__ void getMedianImage(PtrStepSzf history, PtrStepSzf dst, int nFrame)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -105,7 +105,7 @@ __global__ void getMedianImage(PtrStepSzus history, PtrStepSzus dst, int nFrame)
 		}
 
 		int pivot = left + (right - left) / 2;
-		ushort pivotValue = history(pivot * dst.rows + y, x);
+		float pivotValue = history(pivot * dst.rows + y, x);
 		swap(history, x, y, pivot, right, dst.rows);
 		int storeIndex = left;
 
@@ -129,7 +129,7 @@ __global__ void getMedianImage(PtrStepSzus history, PtrStepSzus dst, int nFrame)
 	}
 }
 
-void getMedianImage_gpu(PtrStepSzus history, PtrStepSzus dst, int nFrame, cudaStream_t stream)
+void getMedianImage_gpu(PtrStepSzf history, PtrStepSzf dst, int nFrame, cudaStream_t stream)
 {
 	dim3 block(32, 8);
 	dim3 grid(divUp(dst.cols, block.x), divUp(dst.rows, block.y));
