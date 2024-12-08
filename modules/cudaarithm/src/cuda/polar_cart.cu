@@ -159,25 +159,15 @@ void cv::cuda::cartToPolar(InputArray _xy, OutputArray _mag, OutputArray _angle,
     GpuMat_<float> magc(mag);
     GpuMat_<float> anglec(angle);
 
+    gridTransformUnary(globPtr<float2>(xy), globPtr<float>(magc), magnitude_interleaved_func<float2>(), stream);
+
     if (angleInDegrees)
     {
-        auto f1 = magnitude_interleaved_func<float2>();
-        auto f2 = direction_interleaved_func<float2, true>();
-        cv::cudev::tuple<decltype(f1), decltype(f2)> f12 = cv::cudev::make_tuple(f1, f2);
-        gridTransformTuple(globPtr<float2>(xy),
-                           tie(magc, anglec),
-                           f12,
-                           stream);
+        gridTransformUnary(globPtr<float2>(xy), globPtr<float>(anglec), direction_interleaved_func<float2, true>(), stream);
     }
     else
     {
-        auto f1 = magnitude_interleaved_func<float2>();
-        auto f2 = direction_interleaved_func<float2, false>();
-        cv::cudev::tuple<decltype(f1), decltype(f2)> f12 = cv::cudev::make_tuple(f1, f2);
-        gridTransformTuple(globPtr<float2>(xy),
-                           tie(magc, anglec),
-                           f12,
-                           stream);
+        gridTransformUnary(globPtr<float2>(xy), globPtr<float>(anglec), direction_interleaved_func<float2, false>(), stream);
     }
 
     syncOutput(mag, _mag, stream);
@@ -191,7 +181,7 @@ void cv::cuda::cartToPolar(InputArray _xy, OutputArray _magAngle, bool angleInDe
     CV_Assert( xy.type() == CV_32FC2 );
 
     GpuMat magAngle = getOutputMat(_magAngle, xy.size(), CV_32FC2, stream);
-    
+
     if (angleInDegrees)
     {
         gridTransformUnary(globPtr<float2>(xy),
@@ -299,9 +289,9 @@ namespace
         const T scale = angleInDegrees ? static_cast<T>(CV_PI / 180.0) : static_cast<T>(1.0);
 
         if (mag.empty())
-            polarToCartImpl_<T, false> << <grid, block, 0, stream >> >(mag, angle, x, y, scale);
+            polarToCartImpl_<T, false> <<<grid, block, 0, stream >>>(mag, angle, x, y, scale);
         else
-            polarToCartImpl_<T, true> << <grid, block, 0, stream >> >(mag, angle, x, y, scale);
+            polarToCartImpl_<T, true> <<<grid, block, 0, stream >>>(mag, angle, x, y, scale);
     }
 
     template <typename T>
@@ -315,9 +305,9 @@ namespace
         const T scale = angleInDegrees ? static_cast<T>(CV_PI / 180.0) : static_cast<T>(1.0);
 
         if (mag.empty())
-            polarToCartDstInterleavedImpl_<T, false> << <grid, block, 0, stream >> >(mag, angle, xy, scale);
+            polarToCartDstInterleavedImpl_<T, false> <<<grid, block, 0, stream >>>(mag, angle, xy, scale);
         else
-            polarToCartDstInterleavedImpl_<T, true> << <grid, block, 0, stream >> >(mag, angle, xy, scale);
+            polarToCartDstInterleavedImpl_<T, true> <<<grid, block, 0, stream >>>(mag, angle, xy, scale);
     }
 
     template <typename T>
@@ -330,7 +320,7 @@ namespace
 
         const T scale = angleInDegrees ? static_cast<T>(CV_PI / 180.0) : static_cast<T>(1.0);
 
-        polarToCartInterleavedImpl_<T> << <grid, block, 0, stream >> >(magAngle, xy, scale);
+        polarToCartInterleavedImpl_<T> <<<grid, block, 0, stream >>>(magAngle, xy, scale);
     }
 }
 
