@@ -282,7 +282,10 @@ cv::Ptr<cv::cuda::CLAHE> cv::cuda::createCLAHE(double clipLimit, cv::Size tileGr
 
 namespace
 {
-#if (NPP_VERSION >= 12205)
+#if (NPP_VERSION >= 12300)
+	typedef NppStatus(*get_buf_size_c1_t)(NppiSize oSizeROI, int nLevels, size_t* hpBufferSize);
+    typedef NppStatus(*get_buf_size_c4_t)(NppiSize oSizeROI, int nLevels[], size_t* hpBufferSize);
+#elif (NPP_VERSION >= 12205)
     typedef NppStatus(*get_buf_size_c1_t)(NppiSize oSizeROI, int nLevels, size_t* hpBufferSize, NppStreamContext ctx);
     typedef NppStatus(*get_buf_size_c4_t)(NppiSize oSizeROI, int nLevels[], size_t* hpBufferSize, NppStreamContext ctx);
 #else
